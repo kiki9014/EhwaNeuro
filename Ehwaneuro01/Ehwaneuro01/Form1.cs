@@ -7,12 +7,14 @@ using System.Linq;
 using System.Text;
 using System.Windows.Forms;
 using System.IO.Ports;
+using System.Threading;
 
 namespace Ehwaneuro01
 {
     public partial class Form1 : Form
     {
         SerialPort serialP;
+        Thread rsThread;
 
         public Form1()
         {
@@ -21,12 +23,14 @@ namespace Ehwaneuro01
 
         private void Conn_But_Click(object sender, EventArgs e)
         {
-            if (!serialP.IsOpen)
+            if (serialP == null)
             {
-                serialP.PortName = PortNames.SelectedText;
-                serialP.BaudRate = Convert.ToInt32(BaudRates.SelectedText);
+                serialP = new SerialPort();
+                serialP.PortName = PortNames.SelectedItem.ToString();
+                serialP.BaudRate = Convert.ToInt32(BaudRates.SelectedItem);
 
                 serialP.Open();
+                serialP.DataReceived += new SerialDataReceivedEventHandler(Data_Recieved);
             }
         }
 
@@ -38,6 +42,11 @@ namespace Ehwaneuro01
         private void Sendtxt_TextChanged(object sender, EventArgs e)
         {
             serialP.WriteLine(Sendtxt.SelectedText);
+        }
+
+        private void Data_Recieved(object sender, SerialDataReceivedEventArgs e)
+        {
+            Recievtxt.SelectedText = serialP.ReadLine();
         }
     }
 }
